@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Text Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 100px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Text Generator</h1>
+    <textarea id="prompt" placeholder="Enter your prompt here..."></textarea>
+    <button onclick="generateText()">Generate</button>
+    <div id="response"></div>
+
+    <script>
+        async function generateText() {
+            const prompt = document.getElementById('prompt').value;
+            const response = document.getElementById('response');
+            const button = document.querySelector('button');
+            
+            if (!prompt.trim()) {
+                response.innerHTML = '<span class="error">Please enter a prompt</span>';
+                return;
+            }
+            
+            response.innerHTML = 'Generating...';
+            button.disabled = true;
+            
+            try {
+                const result = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                
+                if (!result.ok) {
+                    throw new Error(`HTTP error! status: ${result.status}`);
+                }
+                
+                const data = await result.json();
+                if (data.error) {
+                    response.innerHTML = `<span class="error">Error: ${data.error}</span>`;
+                } else {
+                    response.innerHTML = data.response || 'No response generated';
+                }
+            } catch (error) {
+                response.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html> 
